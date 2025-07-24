@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
             return true
         }
 
-        override fun onScaleEnd(detector: ScaleGestureDetector?) {
+        override fun onScaleEnd(detector: ScaleGestureDetector) {
             super.onScaleEnd(detector)
             Prefs.saveSeekbarProgress(ctx = applicationContext, factor = seekbar.progress.toFloat())
         }
