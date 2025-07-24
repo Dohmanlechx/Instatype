@@ -5,9 +5,10 @@ import android.view.ScaleGestureDetector
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_main.*
+import com.dohman.directnote.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
+    private lateinit var binding: ActivityMainBinding
     private var hasEditTextBeenInit = false
     private var seekbarProgress = Constants.DEFAULT_FONT_SIZE
 
@@ -15,7 +16,8 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         applicationContext.let {
             if (!Prefs.isDarkModeChosen(it)) {
@@ -24,8 +26,8 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
             seekbarProgress = Prefs.getSeekbarProgress(it)
         }
 
-        edt_main.post { setupEditText() }
-        seekbar.post { setupSlider() }
+        binding.edtMain.post { setupEditText() }
+        binding.seekbar.post { setupSlider() }
 
         setupOnClickListeners()
         setupOnTouchListeners()
@@ -34,34 +36,34 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
     override fun onResume() {
         super.onResume()
         if (hasEditTextBeenInit) {
-            edt_main.requestFocus()
+            binding.edtMain.requestFocus()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        edt_main.clearFocus()
+        binding.edtMain.clearFocus()
     }
 
     private fun setupEditText() {
-        edt_main.textSize = Prefs.getSeekbarProgress(ctx = applicationContext) + Constants.DEFAULT_FONT_SIZE
-        edt_main.requestFocus()
+        binding.edtMain.textSize = Prefs.getSeekbarProgress(ctx = applicationContext) + Constants.DEFAULT_FONT_SIZE
+        binding.edtMain.requestFocus()
         hasEditTextBeenInit = true
     }
 
     private fun setupSlider() {
-        seekbar.setProgress(Prefs.getSeekbarProgress(ctx = applicationContext).toInt(), false)
+        binding.seekbar.setProgress(Prefs.getSeekbarProgress(ctx = applicationContext).toInt(), false)
     }
 
     private fun setupOnClickListeners() {
-        seekbar.setOnSeekBarChangeListener(this)
-        btn_clear.setOnClickListener { edt_main.text?.clear() }
-        btn_dark_mode.setOnClickListener { btnDarkModeAction() }
+        binding.seekbar.setOnSeekBarChangeListener(this)
+        binding.btnClear.setOnClickListener { binding.edtMain.text?.clear() }
+        binding.btnDarkMode.setOnClickListener { btnDarkModeAction() }
     }
 
     private fun setupOnTouchListeners() {
         scaleGestureDetector = ScaleGestureDetector(this, simpleOnScaleGestureListener)
-        edt_main.setOnTouchListener { v, event ->
+        binding.edtMain.setOnTouchListener { v, event ->
             v.performClick()
 
             if (event.pointerCount <= 1) {
@@ -105,15 +107,15 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
         btnClearDrawable: Int,
         btnDarkModeDrawable: Int
     ) {
-        background.setBackgroundColor(getColor(backgroundColor))
+        binding.background.setBackgroundColor(getColor(backgroundColor))
 
-        btn_clear.setBackgroundResource(btnClearDrawable)
-        btn_dark_mode.setBackgroundResource(btnDarkModeDrawable)
+        binding.btnClear.setBackgroundResource(btnClearDrawable)
+        binding.btnDarkMode.setBackgroundResource(btnDarkModeDrawable)
 
         accentColor.let {
-            edt_main.setTextColor(getColor(it))
-            seekbar.progressDrawable.setApiColorFilter(ContextCompat.getColor(applicationContext, it), Mode.MULTIPLY)
-            seekbar.thumb.setApiColorFilter(ContextCompat.getColor(applicationContext, it), Mode.SRC_ATOP)
+            binding.edtMain.setTextColor(getColor(it))
+            binding.seekbar.progressDrawable.setApiColorFilter(ContextCompat.getColor(applicationContext, it), Mode.MULTIPLY)
+            binding.seekbar.thumb.setApiColorFilter(ContextCompat.getColor(applicationContext, it), Mode.SRC_ATOP)
         }
     }
 
@@ -121,7 +123,7 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
     override fun onStopTrackingTouch(p0: SeekBar?) {}
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         val textSizeWithOffset = progress.toFloat() + Constants.DEFAULT_FONT_SIZE
-        edt_main.textSize = textSizeWithOffset
+        binding.edtMain.textSize = textSizeWithOffset
         Prefs.saveSeekbarProgress(ctx = applicationContext, factor = progress.toFloat())
     }
 
@@ -129,14 +131,14 @@ class MainActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             seekbarProgress *= detector.scaleFactor
             seekbarProgress = 1.0f.coerceAtLeast(seekbarProgress.coerceAtMost(100.0f))
-            edt_main.textSize = seekbarProgress + Constants.DEFAULT_FONT_SIZE
-            seekbar.progress = seekbarProgress.toInt()
+            binding.edtMain.textSize = seekbarProgress + Constants.DEFAULT_FONT_SIZE
+            binding.seekbar.progress = seekbarProgress.toInt()
             return true
         }
 
         override fun onScaleEnd(detector: ScaleGestureDetector) {
             super.onScaleEnd(detector)
-            Prefs.saveSeekbarProgress(ctx = applicationContext, factor = seekbar.progress.toFloat())
+            Prefs.saveSeekbarProgress(ctx = applicationContext, factor = binding.seekbar.progress.toFloat())
         }
     }
 }
